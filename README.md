@@ -108,7 +108,6 @@ Smaller local models (such as `gemma2:2b` or `llama3:8b`) can struggle with stri
 
    AVAILABLE_TOOLS = {
        "get_weather": get_weather,
-       "calculate": calculate,
        "reverse_string": reverse_string
    }
    ```
