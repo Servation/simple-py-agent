@@ -98,20 +98,18 @@ Smaller local models (such as `gemma2:2b` or `llama3:8b`) can struggle with stri
 2. Give it a clear docstring explaining what it does (the agent's system prompt compiles this dynamically to teach the LLM).
 3. Add it to the `AVAILABLE_TOOLS` dictionary at the bottom of the file:
    ```python
-   def calculate(expression: str) -> str:
-       """Evaluates a mathematical expression.
+   def reverse_string(text: str) -> str:
+       """Reverses a given text string.
        
        Args:
-           expression: A math string (e.g. 2 + 2).
+           text: The text to reverse (e.g. hello).
        """
-       try:
-           return str(eval(expression))
-       except Exception as e:
-           return f"Error: {e}"
+       return text.strip()[::-1]
 
    AVAILABLE_TOOLS = {
        "get_weather": get_weather,
-       "calculate": calculate
+       "calculate": calculate,
+       "reverse_string": reverse_string
    }
    ```
 
