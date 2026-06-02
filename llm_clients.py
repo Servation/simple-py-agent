@@ -147,16 +147,6 @@ Answer: Ahoy! The winds and skies of Tokyo report: {obs}. Trim the sails and rea
             return f"""Thought: Shiver me timbers! The glass reports: {obs}. I shall relay this to the mateys.
 Answer: Ahoy! The winds and skies of London report: {obs}. Prepare the storm sails!"""
 
-        # First turn for math query
-        elif "15 * 5" in prompt or "15*5" in prompt:
-            if "Observation:" in prompt:
-                obs = [line for line in prompt.splitlines() if line.strip().startswith("Observation:")][-1].replace("Observation:", "").strip()
-                return f"""Thought: Shiver me timbers! The calculator contraption computed: {obs}.
-Answer: Ahoy! The calculation result is: {obs}."""
-            else:
-                return """Thought: Ahoy! The mateys want to multiply 15 by 5. I must deploy the calculator contraption!
-Action: calculate: 15 * 5
-PAUSE"""
 
         # First turn for Tokyo
         elif "Tokyo" in prompt or "tokyo" in prompt:
