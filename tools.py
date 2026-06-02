@@ -33,7 +33,24 @@ def get_weather(city: str) -> str:
         return f"Error fetching live weather for '{city}': {e}"
 
 
+def calculate(expression: str) -> str:
+    """Evaluates a basic mathematical expression.
+    
+    Args:
+        expression: A mathematical expression containing numbers and basic operators (e.g. 12 + 45, 3 * 2).
+    """
+    try:
+        # Sanitize expression: allow only numbers, basic operators, brackets, and dots
+        import re
+        sanitized = re.sub(r'[^0-9+\-*/().\s]', '', expression)
+        result = eval(sanitized, {"__builtins__": None}, {})
+        return str(result)
+    except Exception as e:
+        return f"Error evaluating expression: {e}"
+
+
 # Dictionary mapping tool names to python functions for dynamic lookup
 AVAILABLE_TOOLS = {
-    "get_weather": get_weather
+    "get_weather": get_weather,
+    "calculate": calculate
 }
