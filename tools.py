@@ -1,5 +1,9 @@
 import urllib.request
 import urllib.parse
+import datetime
+import os
+import re
+import json
 
 def get_weather(city: str) -> str:
     """Gets the live weather for a given city.
@@ -33,7 +37,141 @@ def get_weather(city: str) -> str:
         return f"Error fetching live weather for '{city}': {e}"
 
 
+def write_ships_log(entry: str) -> str:
+    """Writes an entry into the ship's log file with a timestamp.
+    
+    Args:
+        entry: The log entry description to write (e.g. Spotted a storm).
+    """
+    try:
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open("ships_log.txt", "a", encoding="utf-8") as f:
+            f.write(f"[{timestamp}] {entry.strip()}\n")
+        return f"Successfully recorded in the ship's log: '{entry.strip()}'"
+    except Exception as e:
+        return f"Error writing to ship's log: {e}"
+
+
+def read_ships_log(dummy: str = "") -> str:
+    """Reads the entire contents of the ship's log file.
+    
+    Args:
+        dummy: Optional dummy parameter (can be left blank).
+    """
+    try:
+        if not os.path.exists("ships_log.txt"):
+            return "The ship's log is empty. No entries have been recorded yet."
+        with open("ships_log.txt", "r", encoding="utf-8") as f:
+            content = f.read().strip()
+        return content if content else "The ship's log is empty."
+    except Exception as e:
+        return f"Error reading ship's log: {e}"
+
+
+def get_system_time(timezone_offset: str = "0") -> str:
+    """Gets the current system date and time, adjusted by an hourly offset.
+    
+    Args:
+        timezone_offset: Hour offset from UTC (e.g. +9 for JST/Tokyo, -5 for EST/New York, or 0 for UTC/London).
+    """
+    try:
+        # Parse timezone offset (default to 0 if invalid or empty)
+        try:
+            offset = float(timezone_offset.strip())
+        except ValueError:
+            offset = 0.0
+            
+        utc_now = datetime.datetime.now(datetime.timezone.utc)
+        target_time = utc_now + datetime.timedelta(hours=offset)
+        formatted_time = target_time.strftime("%A, %Y-%m-%d %H:%M:%S")
+        offset_str = f"UTC{'+' if offset >= 0 else ''}{offset}"
+        return f"Time ({offset_str}): {formatted_time}"
+    except Exception as e:
+        return f"Error retrieving system time: {e}"
+
+
+def search_wikipedia(query: str) -> str:
+    """Searches Wikipedia and returns a short summary of the page.
+    
+    Args:
+        query: The topic or term to look up (e.g. Blackbeard).
+    """
+    try:
+        # Standardize and URL encode query
+        formatted_query = urllib.parse.quote(query.strip().replace(" ", "_"))
+        url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{formatted_query}"
+        
+        req = urllib.request.Request(url, headers={'User-Agent': 'curl/7.88.1'})
+        with urllib.request.urlopen(req, timeout=8) as response:
+            data = json.loads(response.read().decode('utf-8'))
+            
+            # Extract summary text
+            summary = data.get("extract", "")
+            if not summary:
+                return f"No Wikipedia summary found for '{query}'."
+                
+            # Strip non-ASCII characters to keep terminal output safe on Windows
+            clean_summary = summary.encode('ascii', 'ignore').decode('ascii')
+            return clean_summary
+            
+    except Exception as e:
+        return f"Could not find Wikipedia entry for '{query}'. Error: {e}"
+
+
+def translate_to_pirate(text: str) -> str:
+    """Translates standard English text into pirate slang phrases.
+    
+    Args:
+        text: The English sentence or word to translate.
+    """
+    pirate_dict = {
+        "hello": "ahoy",
+        "hi": "ahoy",
+        "friend": "matey",
+        "friends": "mateys",
+        "yes": "aye",
+        "no": "nay",
+        "my": "me",
+        "of": "o'",
+        "you": "ye",
+        "your": "yer",
+        "are": "be",
+        "is": "be",
+        "was": "were",
+        "money": "doubloons",
+        "gold": "booty",
+        "treasure": "loot",
+        "look": "avast",
+        "where": "whither",
+        "stop": "avast",
+    }
+    
+    words = text.split()
+    translated_words = []
+    
+    for word in words:
+        clean_word = re.sub(r'[^\w]', '', word).lower()
+        punctuation = re.sub(r'[\w]', '', word)
+        
+        if clean_word in pirate_dict:
+            t_word = pirate_dict[clean_word]
+            if word.isupper():
+                t_word = t_word.upper()
+            elif word[0].isupper():
+                t_word = t_word.capitalize()
+            translated_words.append(t_word + punctuation)
+        else:
+            translated_words.append(word)
+            
+    return " ".join(translated_words)
+
+
 # Dictionary mapping tool names to python functions for dynamic lookup
 AVAILABLE_TOOLS = {
-    "get_weather": get_weather
+    "get_weather": get_weather,
+    "write_ships_log": write_ships_log,
+    "read_ships_log": read_ships_log,
+    "get_system_time": get_system_time,
+    "search_wikipedia": search_wikipedia,
+    "translate_to_pirate": translate_to_pirate
 }

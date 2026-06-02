@@ -148,6 +148,62 @@ Answer: Ahoy! The winds and skies of Tokyo report: {obs}. Trim the sails and rea
 Answer: Ahoy! The winds and skies of London report: {obs}. Prepare the storm sails!"""
 
 
+        # Clock tool mock query
+        elif "time" in prompt.lower() or "clock" in prompt.lower():
+            if "Observation:" in prompt:
+                obs = [line for line in prompt.splitlines() if line.strip().startswith("Observation:")][-1].replace("Observation:", "").strip()
+                return f"""Thought: Shiver me timbers! The clock reports: {obs}.
+Answer: Ahoy! The local time in that harbor is: {obs}."""
+            else:
+                return """Thought: Ahoy! The traveler wants to know the time of day. I must check the ship's clock!
+Action: get_system_time: 0
+PAUSE"""
+
+        # Wikipedia tool mock query
+        elif "wikipedia" in prompt.lower() or "search" in prompt.lower():
+            if "Observation:" in prompt:
+                obs = [line for line in prompt.splitlines() if line.strip().startswith("Observation:")][-1].replace("Observation:", "").strip()
+                return f"""Thought: Shiver me timbers! The records state: {obs}.
+Answer: Avast! Here is what Wikipedia knows about that topic: {obs}."""
+            else:
+                topic = "Blackbeard" if "blackbeard" in prompt.lower() else "Piracy"
+                return f"""Thought: Ahoy! The crew wants to look up records on '{topic}'. I must search the Wikipedia archives!
+Action: search_wikipedia: {topic}
+PAUSE"""
+
+        # Log write tool mock query
+        elif "log entry:" in prompt.lower() or "write to ship's log" in prompt.lower() or "log We spotted" in prompt:
+            if "Observation:" in prompt:
+                obs = [line for line in prompt.splitlines() if line.strip().startswith("Observation:")][-1].replace("Observation:", "").strip()
+                return f"""Thought: Ahoy! The entry has been saved in the log: {obs}.
+Answer: I have written your entry in the ship's log book, Captain!"""
+            else:
+                return """Thought: The Captain wishes to write an entry in the log. I will deploy the writing quill!
+Action: write_ships_log: We spotted a merchant ship
+PAUSE"""
+
+        # Log read tool mock query
+        elif "read the ship's log" in prompt.lower() or "read log" in prompt.lower():
+            if "Observation:" in prompt:
+                obs = [line for line in prompt.splitlines() if line.strip().startswith("Observation:")][-1].replace("Observation:", "").strip()
+                return f"""Thought: Shiver me timbers! Here is the historical log contents: {obs}.
+Answer: Ahoy, Captain! Here is the ship's log book entries: \n{obs}"""
+            else:
+                return """Thought: The Captain wants to read the ship's log. I must fetch the log book!
+Action: read_ships_log: 
+PAUSE"""
+
+        # Translator tool mock query
+        elif "translate:" in prompt.lower() or "pirate slang" in prompt.lower():
+            if "Observation:" in prompt:
+                obs = [line for line in prompt.splitlines() if line.strip().startswith("Observation:")][-1].replace("Observation:", "").strip()
+                return f"""Thought: Shiver me timbers! The translation is complete: {obs}.
+Answer: Avast! The translated phrase reads: "{obs}"."""
+            else:
+                return """Thought: The traveler wants to translate words into the pirate tongue. I must consult the dialect dictionary!
+Action: translate_to_pirate: Hello friend, yes indeed
+PAUSE"""
+
         # First turn for Tokyo
         elif "Tokyo" in prompt or "tokyo" in prompt:
             return """Thought: Ahoy! The crew wants to see if we can set sail for Tokyo. I must cast my weather glass to check their skies!
