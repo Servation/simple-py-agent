@@ -82,6 +82,13 @@ ollama pull gemma2:2b
 python agent.py --provider openai --model gemma2:2b --base-url http://localhost:11434/v1
 ```
 
+### ⚠️ Notes on Smaller / Local Models
+
+Smaller local models (such as `gemma2:2b` or `llama3:8b`) can struggle with strict formatting in agent loops:
+- **Missing PAUSE / Runaway Generation**: They often forget to stop generating output after declaring an action. Instead of halting for Python to run, they keep talking, hallucinate their own tool observations, and eventually time out.
+- **How we fixed it (Stop Sequences)**: We configured `stop=["PAUSE", "Observation:"]` in `llm_clients.py`. This instructs the LLM server (like Ollama) to physically terminate the text generation the millisecond the model finishes declaring an `Action`, forcing it to hand control back to our Python tools.
+- **Model Recommendations**: While 2B models are fast for testing, **7B to 9B instruct models** (like `gemma2:9b` or `llama3:8b`) offer significantly more stable instruction-following and reasoning behavior.
+
 ---
 
 ## Extending the Agent
