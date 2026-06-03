@@ -127,6 +127,14 @@ class MockClient(LLMClient):
         self.model_name = model_name
 
     def generate(self, prompt: str, system_instruction: Optional[str] = None) -> str:
+        # Check if this is the background log compaction summary prompt
+        if "First Mate compiling the Captain's ship log history" in prompt:
+            return """- We set sail on the ReAct journey.
+- Checked Tokyo and London weather.
+- Spotted a merchant vessel.
+- Log compaction triggered at 30 entries.
+- Raw logs successfully archived to ships_log_archive.txt."""
+
         # Check if the prompt contains the observation from get_weather for London and Tokyo (multiple checks)
         if "Observation:" in prompt and "london" in prompt.lower() and "tokyo" in prompt.lower():
             # Extract observations

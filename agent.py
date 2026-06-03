@@ -1,6 +1,7 @@
 import os
 import re
 import argparse
+import inspect
 from typing import Dict, Callable, Optional
 
 # Import modules from our project
@@ -135,7 +136,13 @@ Rules:
                     if tool_name in self.tools:
                         print(f"\n[System] Executing Python Tool '{tool_name}' with parameter: '{tool_arg}'")
                         try:
-                            observation = self.tools[tool_name](tool_arg)
+                            # Use inspect to inject dependencies (like llm_client) dynamically if requested by the tool signature
+                            sig = inspect.signature(self.tools[tool_name])
+                            kwargs = {}
+                            if "llm_client" in sig.parameters:
+                                kwargs["llm_client"] = self.llm_client
+                                
+                            observation = self.tools[tool_name](tool_arg, **kwargs)
                         except Exception as e:
                             observation = f"Error executing tool: {e}"
                     else:

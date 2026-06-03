@@ -23,6 +23,15 @@ A Python function registered with the Agent that executes specific logic and ret
 ### Persistent Memory (Ship's Log)
 An external file storage system (e.g. `ships_log.txt`) that the Agent can read from or write to, enabling it to persist information across different session runs.
 
+### Active Log
+The current operational log file (`ships_log.txt`) that the agent reads. It is kept short (under 30 entries) to optimize context window size and API costs.
+
+### Archived Log
+A permanent, raw historical backup file (`ships_log_archive.txt`) that stores all log entries in their original state before any compaction/consolidation occurs.
+
+### Log Consolidation (Compaction)
+The background process triggered when the active log reaches 30 lines. It archives the raw logs, calls the LLM Client to summarize the entries into a 5-line summary, and writes that summary back to the active log.
+
 ### Temporal Awareness
 The capability of the Agent to retrieve the current date and timezone-specific local times, allowing it to answer time-critical navigation queries.
 

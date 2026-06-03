@@ -37,17 +37,61 @@ def get_weather(city: str) -> str:
         return f"Error fetching live weather for '{city}': {e}"
 
 
-def write_ships_log(entry: str) -> str:
-    """Writes an entry into the ship's log file with a timestamp.
+def write_ships_log(entry: str, llm_client = None) -> str:
+    """Writes an entry into the ship's log file with a timestamp. Handles auto-compaction at 30 entries.
     
     Args:
         entry: The log entry description to write (e.g. Spotted a storm).
+        llm_client: Injected LLM client for performing log compaction summaries (automatically managed).
     """
     try:
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        with open("ships_log.txt", "a", encoding="utf-8") as f:
+        active_file = "ships_log.txt"
+        archive_file = "ships_log_archive.txt"
+        
+        # Write the entry to active log
+        with open(active_file, "a", encoding="utf-8") as f:
             f.write(f"[{timestamp}] {entry.strip()}\n")
-        return f"Successfully recorded in the ship's log: '{entry.strip()}'"
+            
+        # Check active log line count
+        with open(active_file, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+            
+        # Threshold for log compaction. We use 30 as defined in ADR 0004.
+        # Developers can change this to 3 for testing.
+        COMPACTION_THRESHOLD = 30
+        
+        compacted_msg = ""
+        if len(lines) >= COMPACTION_THRESHOLD and llm_client is not None:
+            # 1. Read entire active log content
+            full_content = "".join(lines)
+            
+            # 2. Append to raw archive log
+            with open(archive_file, "a", encoding="utf-8") as f_arch:
+                archive_header = f"\n--- ARCHIVE SESSION COMPACTION: {timestamp} ---\n"
+                f_arch.write(archive_header + full_content)
+                
+            # 3. Request LLM Client to summarize the log entries
+            prompt = f"""You are the First Mate compiling the Captain's ship log history.
+Summarize the following raw chronological log entries into a concise summary of EXACTLY 5 bullet points.
+Retain key dates, coordinates/cities, and major milestones. Discard repetitive entries.
+
+Raw Log Entries:
+{full_content}
+
+Summarized Ship Log (exactly 5 bullet points, start each bullet with '-'):"""
+            
+            try:
+                summary = llm_client.generate(prompt)
+                
+                # 4. Overwrite active log with the summary
+                with open(active_file, "w", encoding="utf-8") as f_active:
+                    f_active.write(summary.strip() + "\n")
+                compacted_msg = " (Notice: Log compacted and archived because it reached 30 entries!)"
+            except Exception as summary_err:
+                compacted_msg = f" (Warning: Compaction failed during LLM summary: {summary_err})"
+                
+        return f"Successfully recorded in the ship's log: '{entry.strip()}'{compacted_msg}"
     except Exception as e:
         return f"Error writing to ship's log: {e}"
 
