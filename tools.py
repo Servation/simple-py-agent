@@ -166,6 +166,68 @@ def translate_to_pirate(text: str) -> str:
     return " ".join(translated_words)
 
 
+def read_file(filename: str) -> str:
+    """Reads the contents of a local file in the workspace.
+    
+    Args:
+        filename: The name/path of the file to read (e.g. command.txt).
+    """
+    try:
+        clean_name = filename.strip()
+        # Protect against path traversal (only allow files within the workspace)
+        if ".." in clean_name or clean_name.startswith("/") or clean_name.startswith("\\"):
+            return "Error: Access denied. Paths outside the workspace are prohibited."
+            
+        if not os.path.exists(clean_name):
+            return f"Error: File '{clean_name}' does not exist."
+            
+        with open(clean_name, "r", encoding="utf-8") as f:
+            content = f.read()
+        return content
+    except Exception as e:
+        return f"Error reading file: {e}"
+
+
+def write_file(arguments: str) -> str:
+    """Creates or overwrites a local file with the specified content.
+    
+    Args:
+        arguments: Format must be 'filename | content' (e.g. 'command.txt | Lower sails!').
+    """
+    try:
+        if "|" not in arguments:
+            return "Error: Arguments must be in the format 'filename | content'."
+            
+        parts = arguments.split("|", 1)
+        filename = parts[0].strip()
+        content = parts[1].strip()
+        
+        # Protect against path traversal
+        if ".." in filename or filename.startswith("/") or filename.startswith("\\"):
+            return "Error: Access denied. Paths outside the workspace are prohibited."
+            
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(content)
+        return f"Successfully wrote to file '{filename}'"
+    except Exception as e:
+        return f"Error writing file: {e}"
+
+
+def list_directory(dummy: str = "") -> str:
+    """Lists all files and directories in the current working directory.
+    
+    Args:
+        dummy: Optional dummy parameter (can be left blank).
+    """
+    try:
+        files = os.listdir(".")
+        if not files:
+            return "The current directory is empty."
+        return "\n".join(files)
+    except Exception as e:
+        return f"Error listing directory: {e}"
+
+
 # Dictionary mapping tool names to python functions for dynamic lookup
 AVAILABLE_TOOLS = {
     "get_weather": get_weather,
@@ -173,5 +235,8 @@ AVAILABLE_TOOLS = {
     "read_ships_log": read_ships_log,
     "get_system_time": get_system_time,
     "search_wikipedia": search_wikipedia,
-    "translate_to_pirate": translate_to_pirate
+    "translate_to_pirate": translate_to_pirate,
+    "read_file": read_file,
+    "write_file": write_file,
+    "list_directory": list_directory
 }

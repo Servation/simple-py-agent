@@ -31,3 +31,9 @@ An external information fetcher that queries structured summaries of general kno
 
 ### Dialect Translation
 A utility function that maps phrases from one language/dialect to another (e.g. English text to authentic Pirate Captain dialect).
+
+### File System Access (read_file / write_file)
+The capability of the Agent to read local file contents and write custom content to new or existing files, allowing it to act as a document processor or coder.
+
+### Directory Discovery (list_directory)
+The capability of the Agent to list all entries in its current working directory, enabling it to inspect the state of the workspace.

@@ -204,6 +204,39 @@ Answer: Avast! The translated phrase reads: "{obs}"."""
 Action: translate_to_pirate: Hello friend, yes indeed
 PAUSE"""
 
+        # List files mock query
+        elif "list files" in prompt.lower() or "list directory" in prompt.lower() or "folder" in prompt.lower():
+            if "Observation:" in prompt:
+                obs = [line for line in prompt.splitlines() if line.strip().startswith("Observation:")][-1].replace("Observation:", "").strip()
+                return f"""Thought: Shiver me timbers! The list of items in our harbor is: {obs}.
+Answer: Ahoy, Captain! Here be the files in our harbor: \n{obs}"""
+            else:
+                return """Thought: The Captain wishes to see what cargo is in the folder. I must inspect the directory!
+Action: list_directory: 
+PAUSE"""
+
+        # Write file mock query
+        elif "write '" in prompt.lower() or "write file" in prompt.lower() or "to command.txt" in prompt.lower():
+            if "Observation:" in prompt:
+                obs = [line for line in prompt.splitlines() if line.strip().startswith("Observation:")][-1].replace("Observation:", "").strip()
+                return f"""Thought: Ahoy! The writing is completed: {obs}.
+Answer: I have written 'Lower sails!' into command.txt as commanded, Captain!"""
+            else:
+                return """Thought: The Captain wishes to write a new document 'command.txt'. I must quill the words!
+Action: write_file: command.txt | Lower sails!
+PAUSE"""
+
+        # Read file mock query
+        elif "read the contents of command.txt" in prompt.lower() or "read command.txt" in prompt.lower():
+            if "Observation:" in prompt:
+                obs = [line for line in prompt.splitlines() if line.strip().startswith("Observation:")][-1].replace("Observation:", "").strip()
+                return f"""Thought: Shiver me timbers! The document reads: {obs}.
+Answer: Ahoy! The message inside command.txt is: "{obs}"."""
+            else:
+                return """Thought: The Captain wishes to inspect command.txt. I must retrieve it from the desk!
+Action: read_file: command.txt
+PAUSE"""
+
         # First turn for Tokyo
         elif "Tokyo" in prompt or "tokyo" in prompt:
             return """Thought: Ahoy! The crew wants to see if we can set sail for Tokyo. I must cast my weather glass to check their skies!
